@@ -3,6 +3,11 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes.js';
+import syncRoutes from './routes/sync.routes.js';
+import songsRoutes from './routes/songs.routes.js';
+import versionsRoutes from './routes/versions.routes.js';
+import commentsRoutes from './routes/comments.routes.js';
+import leaderboardRoutes from './routes/leaderboard.routes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -45,12 +50,22 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/api/health',
       auth: '/api/auth/*',
+      sync: '/api/sync/*',
+      songs: '/api/songs/*',
+      versions: '/api/versions/*',
+      comments: '/api/comments/*',
+      leaderboard: '/api/leaderboard',
     },
   });
 });
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/sync', syncRoutes);
+app.use('/api/songs', songsRoutes);
+app.use('/api/versions', versionsRoutes);
+app.use('/api/comments', commentsRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

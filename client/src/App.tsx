@@ -4,6 +4,7 @@ import { PrivateRoute } from './components/PrivateRoute';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { SongsPage } from './pages/SongsPage';
+import { SongDetailPage } from './pages/SongDetailPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
 
 function App() {
@@ -25,6 +26,14 @@ function App() {
             element={
               <PrivateRoute>
                 <SongsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/songs/:id"
+            element={
+              <PrivateRoute>
+                <SongDetailPage />
               </PrivateRoute>
             }
           />
