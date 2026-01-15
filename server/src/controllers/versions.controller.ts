@@ -71,7 +71,11 @@ export class VersionsController {
       res.redirect(downloadLink);
     } catch (error) {
       console.error('Stream audio error:', error);
-      res.status(500).json({ message: 'Failed to stream audio' });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({
+        message: 'Failed to stream audio',
+        error: errorMessage
+      });
     }
   }
 }

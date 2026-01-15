@@ -329,7 +329,11 @@ export function SongDetailPage() {
                 {expandedVersionId === version.id && (
                   <div style={{ padding: '1.5rem', borderTop: '1px solid #e0e0e0', background: '#fafafa' }}>
                     <div style={{ marginBottom: '1.5rem' }}>
-                      <AudioPlayer versionId={version.id} versionName={version.versionName} />
+                      <AudioPlayer
+                        versionId={version.id}
+                        versionName={version.versionName}
+                        songTitle={song.title}
+                      />
                     </div>
 
                     <div style={{ marginBottom: '1.5rem' }}>

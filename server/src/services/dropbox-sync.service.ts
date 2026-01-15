@@ -7,16 +7,45 @@ export class DropboxSyncService {
 
   // Initialize Dropbox client
   private static getDropboxClient(): Dropbox {
-    if (!this.dbx) {
-      const accessToken = process.env.DROPBOX_ACCESS_TOKEN;
+    const clientId = process.env.DROPBOX_APP_KEY;
+    const clientSecret = process.env.DROPBOX_APP_SECRET;
 
-      if (!accessToken) {
-        throw new Error('DROPBOX_ACCESS_TOKEN not configured');
+    // Try to specific metadata keys
+    try {
+      const stmt = db.prepare('SELECT key, value FROM metadata WHERE key IN (?, ?, ?)');
+      const rows = stmt.all('dropbox_access_token', 'dropbox_refresh_token', 'dropbox_token_expires_at') as any[];
+
+      const tokens = rows.reduce((acc, row) => ({ ...acc, [row.key]: row.value }), {});
+
+      if (tokens.dropbox_access_token) {
+        // If we have a refresh token and app keys, provide them to allow auto-refresh
+        if (tokens.dropbox_refresh_token && clientId && clientSecret) {
+          return new Dropbox({
+            accessToken: tokens.dropbox_access_token,
+            refreshToken: tokens.dropbox_refresh_token,
+            clientId,
+            clientSecret
+          });
+        }
+        return new Dropbox({ accessToken: tokens.dropbox_access_token });
       }
-
-      this.dbx = new Dropbox({ accessToken });
+    } catch (e) {
+      console.warn('Failed to fetch Dropbox tokens from DB, falling back to env:', e);
     }
-    return this.dbx;
+
+    // Fallback to env var
+    const accessToken = process.env.DROPBOX_ACCESS_TOKEN;
+    if (!accessToken) {
+      // If we have clientId and clientSecret but no access token, we might still return a client 
+      // but it won't be able to make calls until auth.
+      // For now, keep throwing if truly nothing is configured.
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error('Dropbox credentials not configured');
+      }
+      console.warn('Dropbox access token missing');
+    }
+
+    return new Dropbox({ accessToken: accessToken || '' });
   }
 
   // Main sync method
@@ -73,8 +102,14 @@ export class DropboxSyncService {
     // Remove file extension first
     let name = filename.substring(0, filename.lastIndexOf('.'));
 
-    // Remove special characters like underscores, extra spaces
-    name = name.replace(/_+/g, ' ').replace(/\s+/g, ' ').trim();
+    // Check for underscore as explicit separator (User convention: "Song_Version")
+    const underscoreIndex = name.indexOf('_');
+    if (underscoreIndex !== -1) {
+      return name.substring(0, underscoreIndex).trim();
+    }
+
+    // Remove special characters like extra spaces
+    name = name.replace(/\s+/g, ' ').trim();
 
     // If starts with numbers (like "10010"), use just the number part
     const startsWithNumber = name.match(/^(\d+)/);
@@ -83,22 +118,22 @@ export class DropboxSyncService {
     }
 
     // List of keywords that indicate version-specific info (everything after these should be removed)
+    // List of keywords that indicate version-specific info
+    // Only use words that strongly imply a version, not common words
     const stopWords = [
       'wip', 'demo', 'final', 'mix', 'master', 'rough', 'draft',
-      'backing', 'vocal', 'instrumental', 'af', 'also', 'first',
-      'test', 'alt', 'alternate', 'remix', 'upskruvad', 'steady',
-      'new', 'with', 'without', 'w', 'm'
+      'backing', 'vocal', 'instrumental', 'remix', 'upskruvad', 'steady',
+      'alternate', 'alt'
     ];
 
-    // Find the first occurrence of any stop word and cut there
-    let cutIndex = name.length;
-    const lowerName = name.toLowerCase();
+    // Create a regex to find any stop word with word boundaries
+    // matches: (start or space) + word + (end or space or non-word)
+    const pattern = new RegExp(`\\b(${stopWords.join('|')})\\b`, 'i');
+    const match = name.match(pattern);
 
-    for (const word of stopWords) {
-      const index = lowerName.indexOf(word);
-      if (index !== -1 && index < cutIndex) {
-        cutIndex = index;
-      }
+    let cutIndex = name.length;
+    if (match && match.index !== undefined) {
+      cutIndex = match.index;
     }
 
     // Also cut at year patterns (2020-2099)
@@ -233,35 +268,42 @@ export class DropboxSyncService {
       const songMap = new Map<string, number>(); // title -> song_id
 
       // Insert songs
+      // Statements
       const insertSongStmt = db.prepare(`
         INSERT INTO songs (title, dropbox_folder_path, updated_at)
         VALUES (?, ?, CURRENT_TIMESTAMP)
-        ON CONFLICT (dropbox_folder_path) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
       `);
 
-      const getSongIdStmt = db.prepare(`
+      const updateSongStmt = db.prepare(`
+        UPDATE songs SET updated_at = CURRENT_TIMESTAMP WHERE id = ?
+      `);
+
+      const getSongStmt = db.prepare(`
         SELECT id FROM songs WHERE dropbox_folder_path = ?
       `);
 
       for (const song of songs) {
-        const info = insertSongStmt.run(song.title, song.folderPath);
+        const existing = getSongStmt.get(song.folderPath) as any;
+        let id: number;
 
-        // If inserted (not updated), increment counter
-        if (info.changes > 0 && info.lastInsertRowid) {
-          newSongs++;
-          songMap.set(song.title, info.lastInsertRowid as number);
+        if (existing) {
+          id = existing.id;
+          updateSongStmt.run(id);
         } else {
-          // Get existing song ID
-          const existing = getSongIdStmt.get(song.folderPath) as any;
-          songMap.set(song.title, existing.id);
+          const info = insertSongStmt.run(song.title, song.folderPath);
+          id = info.lastInsertRowid as number;
+          newSongs++;
         }
+        songMap.set(song.title, id);
       }
 
       // Insert versions
       const insertVersionStmt = db.prepare(`
         INSERT INTO versions (song_id, version_name, dropbox_file_path, file_size)
         VALUES (?, ?, ?, ?)
-        ON CONFLICT (dropbox_file_path) DO NOTHING
+        ON CONFLICT (dropbox_file_path) DO UPDATE SET 
+          song_id = excluded.song_id,
+          file_size = excluded.file_size
       `);
 
       for (const version of versions) {
@@ -334,6 +376,33 @@ export class DropboxSyncService {
           }
         }
       }
+      // Cleanup stale versions (not in the current sync)
+      const allVersionsStmt = db.prepare('SELECT dropbox_file_path FROM versions');
+      const existingVersions = allVersionsStmt.all() as { dropbox_file_path: string }[];
+      const newPaths = new Set(versions.map(v => v.filePath));
+      const pathsToDelete = existingVersions.filter(v => !newPaths.has(v.dropbox_file_path));
+
+      const deleteVersionStmt = db.prepare('DELETE FROM versions WHERE dropbox_file_path = ?');
+      let deletedVersions = 0;
+      for (const v of pathsToDelete) {
+        deleteVersionStmt.run(v.dropbox_file_path);
+        deletedVersions++;
+      }
+      if (deletedVersions > 0) console.log(`Cleaned up ${deletedVersions} stale versions.`);
+
+      // Cleanup stale songs (not in the current sync)
+      const allSongsStmt = db.prepare('SELECT dropbox_folder_path FROM songs');
+      const existingSongs = allSongsStmt.all() as { dropbox_folder_path: string }[];
+      const newDbFolderPaths = new Set(songs.map(s => s.folderPath));
+      const foldersToDelete = existingSongs.filter(s => !newDbFolderPaths.has(s.dropbox_folder_path));
+
+      const deleteSongStmt = db.prepare('DELETE FROM songs WHERE dropbox_folder_path = ?');
+      let deletedSongs = 0;
+      for (const s of foldersToDelete) {
+        deleteSongStmt.run(s.dropbox_folder_path);
+        deletedSongs++;
+      }
+      if (deletedSongs > 0) console.log(`Cleaned up ${deletedSongs} stale songs.`);
     });
 
     // Execute transaction
@@ -372,16 +441,42 @@ export class DropboxSyncService {
     return result?.value || new Date().toISOString();
   }
 
-  // Get temporary download link for audio streaming
+  // Cache for temporary links
+  private static linkCache = new Map<string, { link: string; expiresAt: number }>();
+
+  // Get temporary download link via cache or API
   static async getTemporaryDownloadLink(filePath: string): Promise<string> {
+    if (!filePath) {
+      throw new Error('No Dropbox file path associated with this version');
+    }
+
+    console.log(`Generating temporary link for path: "${filePath}"`);
+
+    const now = Date.now();
+    const cached = this.linkCache.get(filePath);
+
+    // Return cached link if valid (links valid for 4h, we cache for 3.5h)
+    if (cached && cached.expiresAt > now) {
+      return cached.link;
+    }
+
     const dbx = this.getDropboxClient();
 
     try {
       const response = await dbx.filesGetTemporaryLink({ path: filePath });
-      return response.result.link;
+      const link = response.result.link;
+
+      // Cache for 3.5 hours (12,600,000 ms)
+      this.linkCache.set(filePath, {
+        link,
+        expiresAt: now + 12600000
+      });
+
+      return link;
     } catch (error: any) {
-      console.error('Get temporary link error:', error);
-      throw new Error('Failed to generate download link');
+      console.error('Get temporary link error:', JSON.stringify(error, null, 2));
+      const dropboxError = error?.error?.error_summary || error.message || 'Unknown Dropbox error';
+      throw new Error(`Dropbox API Error: ${dropboxError}`);
     }
   }
 }

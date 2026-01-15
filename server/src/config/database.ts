@@ -12,7 +12,17 @@ const __dirname = dirname(__filename);
 const dbPath = process.env.DATABASE_PATH || join(__dirname, '..', '..', 'database', 'bandaid.db');
 
 // Create database connection
-export const db = new Database(dbPath);
+let dbInstance;
+try {
+  console.log(`Attempting to open database at: ${dbPath}`);
+  dbInstance = new Database(dbPath);
+} catch (error) {
+  console.error('CRITICAL ERROR: Failed to open database connection');
+  console.error('Database path:', dbPath);
+  console.error('Error details:', error);
+  process.exit(1);
+}
+export const db = dbInstance;
 
 // Enable foreign keys
 db.pragma('foreign_keys = ON');

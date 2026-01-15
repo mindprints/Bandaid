@@ -36,7 +36,7 @@ app.use((req, res, next) => {
   // Content Security Policy
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; connect-src 'self' http://localhost:5173"
+    "default-src 'self'; connect-src 'self' http://localhost:5173 https://*.dropboxusercontent.com; media-src 'self' https://*.dropboxusercontent.com"
   );
   next();
 });
@@ -66,6 +66,8 @@ app.use('/api/songs', songsRoutes);
 app.use('/api/versions', versionsRoutes);
 app.use('/api/comments', commentsRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+import dropboxOAuthRoutes from './routes/dropboxOAuth.js';
+app.use('/api/dropbox/oauth', dropboxOAuthRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
