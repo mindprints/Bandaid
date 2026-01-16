@@ -42,7 +42,9 @@ export class SyncController {
 
       res.status(500).json({
         message: 'Failed to sync from Dropbox',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        // TEMPORARY: Expose error in production to debug 502/500 issues
+        error: error.message || 'Unknown error',
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
     }
   }

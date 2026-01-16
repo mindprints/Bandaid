@@ -36,11 +36,12 @@ export class DropboxSyncService {
     // Fallback to env var
     const accessToken = process.env.DROPBOX_ACCESS_TOKEN;
     if (!accessToken) {
+      console.error('CRITICAL: DROPBOX_ACCESS_TOKEN is missing from environment variables');
       // If we have clientId and clientSecret but no access token, we might still return a client 
       // but it won't be able to make calls until auth.
       // For now, keep throwing if truly nothing is configured.
       if (process.env.NODE_ENV === 'production') {
-        throw new Error('Dropbox credentials not configured');
+        throw new Error('Dropbox credentials not configured: Missing DROPBOX_ACCESS_TOKEN');
       }
       console.warn('Dropbox access token missing');
     }
