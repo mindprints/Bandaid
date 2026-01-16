@@ -4,18 +4,19 @@ A web-based Single Page Application (SPA) for band members to collaborate on son
 
 ## Features
 
-### Current (Phase 1-2 Complete)
+### Current (Phases 1-7 Complete)
 - **Authentication System**: Secure JWT-based login with HTTP-only cookies
 - **User Management**: Pre-created accounts for 5 band members
 - **Database**: SQLite database with complete schema for songs, versions, ratings, comments, and notifications
 - **Modern Tech Stack**: React + Vite frontend, Node.js + Express backend, TypeScript throughout
-
-### Coming Soon
-- **Dropbox Integration**: Manual sync button to import songs and versions from Dropbox folder structure
+- **Dropbox Integration**: Sync button to import songs and versions from Dropbox folder structure
 - **Rating System**: 1-10 numerical ratings for each song version
 - **Comments**: Threaded discussion on specific song versions
 - **Leaderboard**: Compare ratings across all versions and members
 - **Notifications**: In-app notifications for new songs, versions, and comments
+
+### Coming Soon
+- **Polish and Deployment**: Final UI adjustments and deployment to production server
 
 ## Tech Stack
 
@@ -23,7 +24,7 @@ A web-based Single Page Application (SPA) for band members to collaborate on son
 - **Backend**: Node.js, Express, TypeScript
 - **Database**: SQLite (better-sqlite3)
 - **Authentication**: JWT with HTTP-only cookies
-- **Cloud Storage**: Dropbox API (coming in Phase 3)
+- **Cloud Storage**: Dropbox API Integration
 
 ## Project Structure
 
@@ -137,22 +138,26 @@ CLIENT_URL=http://localhost:5173
 - `POST /api/auth/logout` - Logout (clear cookie)
 - `GET /api/auth/me` - Get current user
 
-### Coming Soon
-- Songs and Versions CRUD
-- Ratings submission and leaderboard
-- Comments CRUD
-- Dropbox sync
-- Notifications
+### Songs & Versions
+- `GET /api/songs` - List all songs
+- `GET /api/songs/:id` - Get song details
+- `POST /api/sync` - Sync with Dropbox
+
+### Social
+- `POST /api/ratings` - Submit a rating
+- `GET /api/leaderboard` - Get leaderboard data
+- `POST /api/comments` - Add a comment
+- `GET /api/notifications` - Get user notifications
 
 ## Development Progress
 
 - [x] Phase 1: Project setup and configuration
 - [x] Phase 2: Authentication system and database
-- [ ] Phase 3: Dropbox integration
-- [ ] Phase 4: Songs and versions display
-- [ ] Phase 5: Ratings and leaderboard
-- [ ] Phase 6: Comments system
-- [ ] Phase 7: Notifications
+- [x] Phase 3: Dropbox integration
+- [x] Phase 4: Songs and versions display
+- [x] Phase 5: Ratings and leaderboard
+- [x] Phase 6: Comments system
+- [x] Phase 7: Notifications
 - [ ] Phase 8: Polish and deployment
 
 ## Architecture Decisions
@@ -171,20 +176,15 @@ Easier management for small team, shared TypeScript types, single deployment uni
 
 ## Next Steps
 
-1. **Implement Dropbox Integration** (Phase 3)
-   - Set up Dropbox app and access token
-   - Create sync service to map folders → songs, files → versions
-   - Build sync button UI component
+1. **Final Polish** (Phase 8)
+   - UI/UX refinements
+   - Mobile responsiveness check
+   - Performance optimization
 
-2. **Build Song Display** (Phase 4)
-   - Songs list page
-   - Song details with versions
-   - Dropbox file preview/download
-
-3. **Implement Ratings** (Phase 5)
-   - Rating input component (1-10)
-   - Leaderboard calculations
-   - User rating patterns
+2. **Deployment**
+   - Server setup
+   - Domain configuration
+   - SSL certificates
 
 ## Contributing
 
