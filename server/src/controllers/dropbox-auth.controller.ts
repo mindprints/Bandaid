@@ -9,18 +9,21 @@ export class DropboxAuthController {
     private static getDropboxClient() {
         const clientId = process.env.DROPBOX_APP_KEY;
         const clientSecret = process.env.DROPBOX_APP_SECRET;
+        const redirectUri = process.env.DROPBOX_REDIRECT_URI;
 
         if (!clientId || !clientSecret) {
             throw new Error('Dropbox App Key/Secret not configured');
         }
+        if (!redirectUri) {
+            throw new Error('Dropbox Redirect URI not configured');
+        }
 
-        return new Dropbox({ clientId, clientSecret });
+        return { dbx: new Dropbox({ clientId, clientSecret }), redirectUri };
     }
 
     static async initiateAuth(req: Request, res: Response) {
         try {
-            const dbx = DropboxAuthController.getDropboxClient();
-            const redirectUri = 'http://localhost:3001/api/dropbox/oauth/callback';
+            const { dbx, redirectUri } = DropboxAuthController.getDropboxClient();
             const authUrl = await dbx.auth.getAuthenticationUrl(
                 redirectUri,
                 null,
@@ -45,8 +48,7 @@ export class DropboxAuthController {
                 return res.status(400).send('Missing code parameter');
             }
 
-            const dbx = DropboxAuthController.getDropboxClient();
-            const redirectUri = 'http://localhost:3001/api/dropbox/oauth/callback';
+            const { dbx, redirectUri } = DropboxAuthController.getDropboxClient();
 
             const response = await dbx.auth.getAccessTokenFromCode(redirectUri, code);
             const { access_token, refresh_token, expires_in } = response.result as any;

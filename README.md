@@ -95,11 +95,11 @@ The database is seeded with 5 band member accounts:
 
 | Username       | Password     | Display Name      |
 |----------------|--------------|-------------------|
-| john_guitar    | password123  | John (Guitar)     |
-| sarah_vocals   | password123  | Sarah (Vocals)    |
-| mike_drums     | password123  | Mike (Drums)      |
-| lisa_bass      | password123  | Lisa (Bass)       |
-| tom_keys       | password123  | Tom (Keys)        |
+| Anders         | password123  | Anders            |
+| Tomas          | password123  | Tomas             |
+| Dagge          | password123  | Dagge             |
+| Greg           | password123  | Greg              |
+| Admin          | password123  | Admin             |
 
 ## Environment Configuration
 

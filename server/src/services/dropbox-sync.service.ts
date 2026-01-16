@@ -442,7 +442,27 @@ export class DropboxSyncService {
   }
 
   // Cache for temporary links
+  private static readonly TEMP_LINK_TTL_MS = 12600000; // 3.5 hours
+  private static readonly MAX_CACHE_SIZE = 1000;
   private static linkCache = new Map<string, { link: string; expiresAt: number }>();
+
+  private static pruneCache() {
+    const now = Date.now();
+    for (const [key, value] of this.linkCache.entries()) {
+      if (value.expiresAt <= now) {
+        this.linkCache.delete(key);
+      }
+    }
+    // If still too big, remove oldest
+    if (this.linkCache.size > this.MAX_CACHE_SIZE) {
+      const sortedEntries = Array.from(this.linkCache.entries()).sort((a, b) => a[1].expiresAt - b[1].expiresAt);
+      // Remove oldest 10%
+      const toRemove = Math.ceil(this.MAX_CACHE_SIZE * 0.1);
+      for (let i = 0; i < toRemove; i++) {
+        if (sortedEntries[i]) this.linkCache.delete(sortedEntries[i][0]);
+      }
+    }
+  }
 
   // Get temporary download link via cache or API
   static async getTemporaryDownloadLink(filePath: string): Promise<string> {
@@ -466,11 +486,16 @@ export class DropboxSyncService {
       const response = await dbx.filesGetTemporaryLink({ path: filePath });
       const link = response.result.link;
 
-      // Cache for 3.5 hours (12,600,000 ms)
+      // Cache for 3.5 hours
       this.linkCache.set(filePath, {
         link,
-        expiresAt: now + 12600000
+        expiresAt: now + this.TEMP_LINK_TTL_MS
       });
+
+      // Prune cache occasionally (e.g., on every update, or if size grows)
+      if (this.linkCache.size % 10 === 0) { // Prune every 10 additions
+        this.pruneCache();
+      }
 
       return link;
     } catch (error: any) {

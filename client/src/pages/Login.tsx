@@ -127,15 +127,15 @@ export function Login() {
         }}>
           <strong>Demo Accounts:</strong>
           <br />
-          john_guitar / password123
+          Anders / password123
           <br />
-          sarah_vocals / password123
+          Tomas / password123
           <br />
-          mike_drums / password123
+         Dagge / password123
           <br />
-          lisa_bass / password123
+         Greg / password123
           <br />
-          tom_keys / password123
+         Admin / password123
         </div>
       </div>
     </div>

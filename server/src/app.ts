@@ -8,6 +8,7 @@ import songsRoutes from './routes/songs.routes.js';
 import versionsRoutes from './routes/versions.routes.js';
 import commentsRoutes from './routes/comments.routes.js';
 import leaderboardRoutes from './routes/leaderboard.routes.js';
+import dropboxOAuthRoutes from './routes/dropboxOAuth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -34,9 +35,10 @@ app.use(cookieParser());
 // Security headers
 app.use((req, res, next) => {
   // Content Security Policy
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; connect-src 'self' http://localhost:5173 https://*.dropboxusercontent.com; media-src 'self' https://*.dropboxusercontent.com"
+    `default-src 'self'; connect-src 'self' ${clientUrl} https://*.dropboxusercontent.com; media-src 'self' https://*.dropboxusercontent.com`
   );
   next();
 });
@@ -66,7 +68,6 @@ app.use('/api/songs', songsRoutes);
 app.use('/api/versions', versionsRoutes);
 app.use('/api/comments', commentsRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
-import dropboxOAuthRoutes from './routes/dropboxOAuth.js';
 app.use('/api/dropbox/oauth', dropboxOAuthRoutes);
 
 // Health check
