@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { readFileSync } from 'fs';
+import { readFileSync, mkdirSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import dotenv from 'dotenv';
@@ -14,6 +14,13 @@ const dbPath = process.env.DATABASE_PATH || join(__dirname, '..', '..', 'databas
 // Create database connection
 let dbInstance: any;
 try {
+  // Ensure database directory exists
+  const dbDir = dirname(dbPath);
+  if (!existsSync(dbDir)) {
+    console.log(`Creating database directory at: ${dbDir}`);
+    mkdirSync(dbDir, { recursive: true });
+  }
+
   console.log(`Attempting to open database at: ${dbPath}`);
   dbInstance = new Database(dbPath);
 } catch (error) {
