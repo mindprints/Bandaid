@@ -1,5 +1,6 @@
 import app from './app.js';
 import { initializeDatabase } from './config/database.js';
+import fs from 'fs';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -23,7 +24,14 @@ try {
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
   // Serve frontend build files
-  const clientPath = path.join(__dirname, '../../client/dist');
+  let clientPath = path.join(__dirname, '../../client/dist');
+
+  // Handle nested build structure in production (e.g. dist/server/src)
+  if (!fs.existsSync(clientPath)) {
+    clientPath = path.join(__dirname, '../../../../client/dist');
+  }
+
+  console.log('Serving static files from:', clientPath);
   app.use(express.static(clientPath));
 
   // Handle SPA routing - send all non-API requests to index.html
