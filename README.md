@@ -87,7 +87,7 @@ npm run dev
 ```
 
 This starts:
-- Backend API: http://localhost:3001
+- Backend API: http://localhost:3000
 - Frontend: http://localhost:5173
 
 ### Default User Accounts
@@ -108,7 +108,7 @@ Create `server/.env` with the following variables:
 
 ```env
 NODE_ENV=development
-PORT=3001
+PORT=3000
 JWT_SECRET=your_secret_key_here
 DATABASE_PATH=./database/bandaid.db
 DROPBOX_ACCESS_TOKEN=your_dropbox_token
