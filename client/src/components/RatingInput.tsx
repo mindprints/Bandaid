@@ -6,7 +6,7 @@ interface RatingInputProps {
   onRatingSubmit: (score: number) => Promise<void>;
 }
 
-export function RatingInput({ versionId, currentRating, onRatingSubmit }: RatingInputProps) {
+export function RatingInput({ versionId: _versionId, currentRating, onRatingSubmit }: RatingInputProps) {
   const [selectedScore, setSelectedScore] = useState<number | null>(currentRating);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
