@@ -43,23 +43,25 @@ app.use((req, res, next) => {
   next();
 });
 
-// Root endpoint - helpful message
-app.get('/', (req, res) => {
-  res.json({
-    name: 'BandAid API',
-    version: '1.0.0',
-    message: 'Backend API is running. Frontend is at http://localhost:5173',
-    endpoints: {
-      health: '/api/health',
-      auth: '/api/auth/*',
-      sync: '/api/sync/*',
-      songs: '/api/songs/*',
-      versions: '/api/versions/*',
-      comments: '/api/comments/*',
-      leaderboard: '/api/leaderboard',
-    },
+// Root endpoint - helpful message (Development only)
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/', (req, res) => {
+    res.json({
+      name: 'BandAid API',
+      version: '1.0.0',
+      message: 'Backend API is running. Frontend is at http://localhost:5173',
+      endpoints: {
+        health: '/api/health',
+        auth: '/api/auth/*',
+        sync: '/api/sync/*',
+        songs: '/api/songs/*',
+        versions: '/api/versions/*',
+        comments: '/api/comments/*',
+        leaderboard: '/api/leaderboard',
+      },
+    });
   });
-});
+}
 
 // Routes
 app.use('/api/auth', authRoutes);
