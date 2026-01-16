@@ -12,7 +12,7 @@ const __dirname = dirname(__filename);
 const dbPath = process.env.DATABASE_PATH || join(__dirname, '..', '..', 'database', 'bandaid.db');
 
 // Create database connection
-let dbInstance: Database;
+let dbInstance: any;
 try {
   console.log(`Attempting to open database at: ${dbPath}`);
   dbInstance = new Database(dbPath);
@@ -22,7 +22,7 @@ try {
   console.error('Error details:', error);
   process.exit(1);
 }
-export const db: Database = dbInstance!;
+export const db = dbInstance;
 
 // Enable foreign keys
 db.pragma('foreign_keys = ON');
