@@ -440,7 +440,20 @@ console.log(`Database backed up to ${backupPath}`);
 - Verify persistent volume is configured
 - Check volume mount path matches `DATABASE_PATH`
 
-### CORS Errors
+### 502 Bad Gateway / Database Permission Errors
+If logs show `SQLITE_CANTOPEN`:
+1. SSH into your VPS: `ssh user@your-vps`
+2. Find your volume path (usually `/etc/dokploy/volumes/bandaid-db` or similar, check Dokploy settings).
+3. If using the automatic volume `bandaider_sqlite`, you need to find where Dokploy stores it.
+   - Run `docker inspect bandaider_sqlite` to find the mount point on the host.
+4. Fix permissions:
+   ```bash
+   # Replace /path/to/volume with the actual host path
+   chmod -R 777 /path/to/volume
+   # Or set ownership to the container user (usually 1000)
+   chown -R 1000:1000 /path/to/volume
+   ```
+5. Redeploy.
 - Verify `CLIENT_URL` environment variable
 - Check CORS middleware in backend
 - Ensure cookies are sent with `withCredentials: true`
