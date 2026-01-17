@@ -123,9 +123,7 @@ We are working on main branch
 Set these build commands in Dokploy:
 
 **Install Command**:
-```bash
-npm install
-```
+npm ci --include=dev
 
 **Build Command**:
 ```bash

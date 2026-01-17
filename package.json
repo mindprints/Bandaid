@@ -16,7 +16,7 @@
     "build:server": "npm run build --workspace=server",
     "build:client": "npm run build --workspace=client",
     "start": "npm run start --workspace=server",
-    "start:prod": "NODE_ENV=production node server/dist/index.js",
+    "start:prod": "ls -R server && NODE_ENV=production node server/dist/index.js",
     "db:seed": "node server/dist/database/seeds.js"
   },
   "devDependencies": {
