@@ -1,7 +1,7 @@
 {
   "name": "bandaid",
   "version": "1.0.0",
-  "description": "Band collaboration app for rating and commenting on song versions",
+  "description": "Band collaboration application for rating and commenting on song versions",
   "private": true,
   "workspaces": [
     "client",
