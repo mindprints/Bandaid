@@ -77,7 +77,7 @@ export function Dashboard() {
           borderRadius: '8px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
         }}>
-          <h3 style={{ marginTop: 0 }}>Coming Soon</h3>
+          <h3 style={{ marginTop: 0 }}>BandAider Features</h3>
           <ul>
             <li>Dropbox integration for syncing songs</li>
             <li>Rating and commenting system</li>

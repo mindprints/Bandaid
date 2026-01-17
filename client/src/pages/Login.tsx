@@ -125,17 +125,7 @@ export function Login() {
           fontSize: '0.85rem',
           color: '#666',
         }}>
-          <strong>Demo Accounts:</strong>
-          <br />
-          Anders / password123
-          <br />
-          Tomas / password123
-          <br />
-         Dagge / password123
-          <br />
-         Greg / password123
-          <br />
-         Admin / password123
+          
         </div>
       </div>
     </div>
