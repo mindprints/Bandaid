@@ -16,8 +16,8 @@
     "build:server": "npm run build --workspace=server",
     "build:client": "npm run build --workspace=client",
     "start": "npm run start --workspace=server",
-    "start:prod": "ls -R server && NODE_ENV=production node server/dist/index.js",
-    "db:seed": "node server/dist/database/seeds.js"
+    "start:prod": "NODE_ENV=production node server/dist/server/src/index.js",
+    "db:seed": "node server/dist/server/src/database/seeds.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
