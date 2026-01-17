@@ -201,12 +201,18 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 
 ### Phase 5: Database Setup Strategy
 
-**Option A: Persistent Volume (Recommended)**
+**Option A: Persistent Volume (CRITICAL)**
 
-In Dokploy, configure a persistent volume:
-- **Volume Path**: `/app/database`
-- **Mount Point**: `/app/database`
-- This ensures your database persists across deployments
+⚠️ **You must do this, or you will lose all data on every deployment.**
+
+1.  Go to your Project in Dokploy -> **Volumes**.
+2.  Click **"Add Volume"**.
+3.  **Volume Name**: `bandaider_sqlite`
+4.  **Mount Path** (Container Path): `/app/database`
+    *   *This MUST match the folder where your `DATABASE_PATH` is pointing.*
+5.  **Save**.
+
+This maps a folder on your actual server (Host Path) to the folder inside the container (Mount Path). When the container is destroyed/redeployed, the files stay safe on the Host.
 
 **Option B: Manual Database Upload**
 
