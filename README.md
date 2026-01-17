@@ -1,4 +1,4 @@
-# BandAid - Band Collaboration Platform
+# BandAider - Band Collaboration Platform
 
 A web-based Single Page Application (SPA) for band members to collaborate on song material stored in Dropbox. Members can rate song versions, leave comments, and track each other's opinions through an interactive leaderboard.
 

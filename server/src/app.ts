@@ -47,7 +47,7 @@ app.use((req, res, next) => {
 if (process.env.NODE_ENV !== 'production') {
   app.get('/', (req, res) => {
     res.json({
-      name: 'BandAid API',
+      name: 'Bandaider API',
       version: '1.0.0',
       message: 'Backend API is running. Frontend is at http://localhost:5173',
       endpoints: {
@@ -74,7 +74,7 @@ app.use('/api/dropbox/oauth', dropboxOAuthRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'BandAid API is running' });
+  res.json({ status: 'ok', message: 'Bandaider API is running' });
 });
 
 // Error handler (must be last)

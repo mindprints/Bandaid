@@ -1,7 +1,7 @@
-# BandAid Deployment Plan - Dokploy on Hostinger
+# BandAider Deployment Plan - Dokploy on Hostinger
 
 ## Overview
-Deploy  BandAid app to Dokploy using GitHub for deployment triggers, with proper secrets management and SQLite database setup.
+Deploy  BandAider app to Dokploy using GitHub for deployment triggers, with proper secrets management and SQLite database setup.
 
 ---
 
@@ -321,14 +321,14 @@ if (process.env.NODE_ENV === 'production') {
 
 **1. Configure Domain in Dokploy**
 - Go to your project settings
-- Add your domain: `bandaid.yourdomain.com`
+- Add your domain: `bandaider.xyz`
 - Dokploy will automatically provision SSL via Let's Encrypt
 
 **2. Update DNS Records**
 Point your domain to your VPS IP:
 ```
 Type: A
-Name: bandaid (or @)
+Name: bandaider (or @)
 Value: your.vps.ip.address
 TTL: 3600
 ```
